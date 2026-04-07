@@ -41,3 +41,23 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Environment variables
+.env
+.env*.local
+
+# Prisma generated client
+src/generated/
+
+# Next.js TypeScript declarations
+next-env.d.ts
+
+# Other common ignores
+*.log
+.DS_Store
