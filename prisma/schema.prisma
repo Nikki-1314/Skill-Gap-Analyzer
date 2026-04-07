@@ -134,3 +134,4 @@ model AssessmentSkillRating {
   @@id([assessmentId, skillId])
   @@index([skillId])
 }
+// force update
