@@ -1,0 +1,136 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum ProficiencyLevel {
+  NONE
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts    Account[]
+  sessions    Session[]
+  assessments Assessment[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Role {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  description String?     @db.Text
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  roleSkills  RoleSkill[]
+  assessments Assessment[]
+}
+
+model Skill {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  category    String
+  description String?     @db.Text
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  roleSkills         RoleSkill[]
+  assessmentRatings  AssessmentSkillRating[]
+}
+
+model RoleSkill {
+  roleId      String
+  skillId     String
+  targetLevel ProficiencyLevel
+  weight      Int               @default(1)
+
+  role  Role  @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, skillId])
+  @@index([skillId])
+}
+
+model Assessment {
+  id        String    @id @default(cuid())
+  userId    String
+  roleId    String
+  title     String    @default("Skill Assessment")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user    User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role    Role                        @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  ratings AssessmentSkillRating[]
+
+  @@index([userId])
+  @@index([roleId])
+}
+
+model AssessmentSkillRating {
+  assessmentId String
+  skillId      String
+  selfLevel    ProficiencyLevel
+  evidence     String?            @db.Text
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  skill      Skill      @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([assessmentId, skillId])
+  @@index([skillId])
+}
