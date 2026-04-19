@@ -5,16 +5,22 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 const createPrismaClient = () => {
-  // Use a dummy URL during build to prevent crashes
+  const isBuild = process.env.NEXT_PHASE === "phase-production-build";
   const url = process.env.DATABASE_URL || "mysql://root:pass@localhost:3306/db";
   
-  return new PrismaClient({
-    datasourceUrl: url,
-    log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
-  });
+  try {
+    return new PrismaClient({
+      datasourceUrl: url,
+    } as any);
+  } catch (error) {
+    if (isBuild) {
+      console.warn("Prisma initialization failed during build, using dummy client");
+      return {} as PrismaClient;
+    }
+    throw error;
+  }
 };
 
 export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
-

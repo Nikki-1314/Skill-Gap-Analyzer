@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
   get adapter() {
-    return PrismaAdapter(prisma);
+    return PrismaAdapter(prisma as any);
   },
   session: { strategy: "database" },
   secret: process.env.NEXTAUTH_SECRET || "build-time-secret-fallback",
