@@ -5,7 +5,7 @@ import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ProficiencyLevel } from "@/generated/prisma/enums";
+import { ProficiencyLevel } from "@prisma/client";
 
 function parseLevel(v: FormDataEntryValue | null): ProficiencyLevel | null {
   if (!v) return null;
