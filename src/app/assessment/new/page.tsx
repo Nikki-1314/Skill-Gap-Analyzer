@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ProficiencyLevel } from "@/generated/prisma/enums";
+import { ProficiencyLevel } from "@prisma/client";
 import { createAssessment } from "@/app/assessment/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
