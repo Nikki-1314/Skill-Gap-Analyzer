@@ -5,7 +5,9 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
+  get adapter() {
+    return PrismaAdapter(prisma);
+  },
   session: { strategy: "database" },
   pages: {
     signIn: "/sign-in",
