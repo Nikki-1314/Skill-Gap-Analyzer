@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { getServerSession } from "next-auth";
 
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ProficiencyLevel } from "@/generated/prisma/enums";
 import { createAssessment } from "@/app/assessment/actions";
@@ -22,6 +24,25 @@ export default async function NewAssessmentPage({
 }: {
   searchParams: Promise<{ roleId?: string }>;
 }) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return (
+      <main className="flex flex-1 items-center justify-center px-6 py-12">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Sign in required</CardTitle>
+            <CardDescription>Please sign in to take an assessment.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/sign-in">Go to sign in</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </main>
+    );
+  }
+
   const { roleId } = await searchParams;
   if (!roleId) {
     return (
@@ -81,12 +102,6 @@ export default async function NewAssessmentPage({
             template.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            You can fill this form without signing in. To save and view a report, sign in when prompted after
-            submit.
-          </p>
-        </CardContent>
       </Card>
 
       <form action={createAssessment} className="flex flex-col gap-4">

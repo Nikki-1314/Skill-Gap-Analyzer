@@ -1,10 +1,31 @@
 import Link from "next/link";
+import { getServerSession } from "next-auth";
 
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function RolesPage() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) {
+    return (
+      <main className="flex flex-1 items-center justify-center px-6 py-12">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Sign in required</CardTitle>
+            <CardDescription>Please sign in to choose a role.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link href="/sign-in">Go to sign in</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </main>
+    );
+  }
+
   const roles = await prisma.role.findMany({
     orderBy: { name: "asc" },
     include: { roleSkills: { include: { skill: true } } },
