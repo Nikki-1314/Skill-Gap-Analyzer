@@ -9,9 +9,7 @@ const createPrismaClient = () => {
   const url = process.env.DATABASE_URL || "mysql://root:pass@localhost:3306/db";
   
   try {
-    return new PrismaClient({
-      datasourceUrl: url,
-    } as any);
+    return new PrismaClient();
   } catch (error) {
     if (isBuild) {
       console.warn("Prisma initialization failed during build, using dummy client");
