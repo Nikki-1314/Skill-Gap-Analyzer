@@ -85,6 +85,7 @@ model Skill {
   name        String      @unique
   category    String
   description String?     @db.Text
+  resource_url String?    @db.Text
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
