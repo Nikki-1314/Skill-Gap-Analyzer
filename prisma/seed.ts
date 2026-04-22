@@ -10,10 +10,12 @@ const adapter = new PrismaMariaDb({
   port: process.env.DATABASE_PORT ? Number(process.env.DATABASE_PORT) : undefined,
   connectionLimit: 5,
   allowPublicKeyRetrieval: true,
-  ssl: {
-    minVersion: 'TLSv1.2',
-    rejectUnauthorized: false,
-  },
+  ...(process.env.DATABASE_HOST !== 'localhost' && {
+    ssl: {
+      minVersion: 'TLSv1.2',
+      rejectUnauthorized: false,
+    },
+  }),
 });
 
 const prisma = new PrismaClient({ adapter });
