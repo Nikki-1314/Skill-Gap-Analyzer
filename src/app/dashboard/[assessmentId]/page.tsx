@@ -4,12 +4,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ProficiencyLevel } from "@prisma/client";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { GapChart } from "./GapChart";
-import { ProgressChart } from "./ProgressChart";
+import { Roadmap } from "./Roadmap";
 
 function levelToNumber(level: ProficiencyLevel) {
   switch (level) {
@@ -123,16 +121,12 @@ export default async function DashboardPage({
     }))
     .sort((a, b) => b.impact - a.impact);
 
-  const totalImpact = gaps.reduce((acc, g) => acc + g.impact, 0);
-  
   const totalWeightedTarget = chartData.reduce((acc, d) => acc + d.target * d.weight, 0);
   const totalWeightedAchieved = chartData.reduce((acc, d) => acc + Math.min(d.self, d.target) * d.weight, 0);
   
   const matchPercentage = totalWeightedTarget > 0 
     ? Math.round((totalWeightedAchieved / totalWeightedTarget) * 100) 
     : 100;
-
-  const top = gaps.slice(0, 5);
 
   return (
     <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-12">
@@ -145,7 +139,7 @@ export default async function DashboardPage({
         </div>
         <div className="flex items-center gap-8">
           <div className="flex flex-col items-end">
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Total Match</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 text-right">Total Match</span>
             <span className="text-4xl font-black text-primary leading-none">{matchPercentage}%</span>
           </div>
           <div className="flex items-center gap-2 border-l pl-8">
@@ -159,65 +153,28 @@ export default async function DashboardPage({
         </div>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-3">
-        <Card className="lg:col-span-2 border-none shadow-none bg-white/50 dark:bg-slate-950/50 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="text-xl font-bold">Gap Analysis</CardTitle>
-            <CardDescription className="font-medium text-slate-400">
-              Interactive visualization of your current vs. target skill levels.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <GapChart data={chartData.map(({ skill, target, self }) => ({ skill, target, self }))} />
-          </CardContent>
-        </Card>
-
-        <Card className="border-none shadow-sm bg-white dark:bg-slate-900 h-fit">
-          <CardHeader>
-            <CardTitle className="text-lg font-bold">Priority Roadmap</CardTitle>
-            <CardDescription className="text-xs font-medium text-slate-400 uppercase tracking-wider">Strategic Next Steps</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-6">
-            {top.filter(g => g.gap > 0).length > 0 ? (
-              top.filter(g => g.gap > 0).map((g, i) => (
-                <div key={g.skill} className="group flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
-                    <div className="font-bold text-sm text-slate-700 dark:text-slate-200">{g.skill}</div>
-                    {g.resource_url && (
-                      <a 
-                        href={g.resource_url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-[9px] bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md text-slate-500 hover:text-primary hover:bg-primary/10 transition-colors font-black uppercase tracking-widest"
-                      >
-                        Learn &nearr;
-                      </a>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-primary transition-all duration-700 ease-out" 
-                        style={{ width: `${(g.self / g.target) * 100}%` }}
-                      />
-                    </div>
-                    <span className="text-[10px] font-black text-slate-400 tabular-nums">
-                      {g.self}/{g.target}
-                    </span>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-10">
-                <div className="text-5xl mb-4">🏆</div>
-                <p className="text-sm font-black uppercase tracking-tight">Market Ready</p>
-                <p className="text-xs text-slate-400 mt-2 font-medium italic">You have surpassed all target requirements.</p>
+      <div className="grid gap-12 lg:grid-cols-3">
+        <div className="lg:col-span-2 space-y-12">
+          <Card className="border-none shadow-none bg-white/50 dark:bg-slate-900/40 backdrop-blur-sm ring-1 ring-slate-100 dark:ring-slate-800">
+            <CardHeader>
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <CardTitle className="text-xl font-black">Gap Analysis</CardTitle>
               </div>
-            )}
-          </CardContent>
-        </Card>
+              <CardDescription className="font-bold text-slate-400 text-xs uppercase tracking-wider">
+                Comparative proficiency visualization
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <GapChart data={chartData.map(({ skill, target, self }) => ({ skill, target, self }))} />
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="lg:col-span-1">
+          <Roadmap gaps={gaps} />
+        </div>
       </div>
     </main>
   );
 }
-
